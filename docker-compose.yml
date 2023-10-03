@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+    php:
+        build:
+            context: .
+            dockerfile: docker/Dockerfile
+        container_name: applicationo2o
+        networks:
+            - pruebao2o
+        ports:
+            - 8000:80
+        volumes:
+            - .:/var/www/html
+            - ~/.composer:/home/user/.composer
+networks:
+    pruebao2o:
