@@ -1,0 +1,9 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: Prueba O2O
+            description: Prueba Técnica para la empresa O2O de una API REST que se conecta con una API externa
+            version: 1.0.0
+    areas: # to filter documented areas
+        path_patterns:
+            - ^/ # Accepts routes under /api except /api/doc
