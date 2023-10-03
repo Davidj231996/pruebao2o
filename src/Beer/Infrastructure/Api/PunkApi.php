@@ -3,6 +3,7 @@
 namespace App\Beer\Infrastructure\Api;
 
 use App\Beer\Domain\BeerApiInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -25,8 +26,16 @@ class PunkApi implements BeerApiInterface
      */
     public function get(int $id): array
     {
-        $response = $this->client->request('GET', 'https://api.punkapi.com/v2/beers/' . $id);
-        return $response->toArray();
+        $url = 'https://api.punkapi.com/v2/beers/' . $id;
+        $cache = new FilesystemAdapter();
+        $value = $cache->getItem('beer_get_' . $id);
+        if (!$value->isHit()) {
+            $response = $this->client->request('GET', $url);
+            $value->set($response->toArray());
+            $cache->save($value);
+        }
+
+        return $value->get();
     }
 
     /**
@@ -39,12 +48,19 @@ class PunkApi implements BeerApiInterface
     public function list(string $filter): array
     {
         $url = 'https://api.punkapi.com/v2/beers';
+        $key = 'beer_list';
         if ('' != $filter) {
-            $filter = str_replace(' ', '_' ,$filter);
+            $filter = str_replace(' ', '_', $filter);
+            $key = $key . $filter;
             $url = $url . '?food=' . $filter;
         }
-        $response = $this->client->request('GET', $url);
-
-        return $response->toArray();
+        $cache = new FilesystemAdapter();
+        $value = $cache->getItem($key);
+        if (!$value->isHit()) {
+            $response = $this->client->request('GET', $url);
+            $value->set($response->toArray());
+            $cache->save($value);
+        }
+        return $value->get();
     }
 }
